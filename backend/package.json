@@ -4,6 +4,7 @@
   "type": "module",
   "scripts": {
     "dev": "tsx watch src/index.js",
+    "build": "npx prisma generate",
     "start": "tsx src/index.js",
     "db:migrate": "npx prisma migrate dev",
     "db:seed": "tsx src/seed.js",
