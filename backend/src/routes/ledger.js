@@ -1,11 +1,36 @@
 import { Router } from 'express';
+import multer from 'multer';
+import path from 'path';
+import { fileURLToPath } from 'url';
 import prisma from '../db.js';
 import { authMiddleware } from '../middleware/auth.js';
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+
+const storage = multer.diskStorage({
+  destination: path.join(__dirname, '..', '..', 'uploads'),
+  filename: (req, file, cb) => {
+    const ext = path.extname(file.originalname);
+    cb(null, `ledger-${Date.now()}${ext}`);
+  },
+});
+const upload = multer({
+  storage,
+  limits: { fileSize: 5 * 1024 * 1024 },
+  fileFilter: (req, file, cb) => {
+    const allowed = /jpeg|jpg|png|webp/;
+    if (allowed.test(path.extname(file.originalname).toLowerCase())) {
+      cb(null, true);
+    } else {
+      cb(new Error('Only images allowed'));
+    }
+  },
+});
 
 const router = Router();
 router.use(authMiddleware);
 
-// GET /api/roznamcha?date=2026-04-26
+// GET /api/ledger?date=2026-04-26
 router.get('/', async (req, res) => {
   try {
     const { date } = req.query;
@@ -59,10 +84,12 @@ router.get('/', async (req, res) => {
   }
 });
 
-// POST /api/roznamcha — manual entry (expense, udhar wapsi, etc.)
-router.post('/', async (req, res) => {
+// POST /api/ledger — manual entry with optional attachment
+router.post('/', upload.single('attachment'), async (req, res) => {
   try {
-    const { type, category, description, partyName, amount } = req.body;
+    const { type, category, description, partyName, amount, laborId, bankId, paymentMode } = req.body;
+
+    console.log('Ledger POST body:', req.body, 'file:', req.file?.filename);
 
     if (!type || !category || !description || !amount) {
       return res.status(400).json({ error: 'type, category, description, and amount required' });
@@ -73,7 +100,10 @@ router.post('/', async (req, res) => {
       orderBy: { createdAt: 'desc' },
     });
     const lastBalance = lastTx ? lastTx.balance : 0;
-    const newBalance = type === 'jama' ? lastBalance + amount : lastBalance - amount;
+    const parsedAmount = Number(amount);
+    const newBalance = type === 'jama' ? lastBalance + parsedAmount : lastBalance - parsedAmount;
+
+    const attachment = req.file ? `/uploads/${req.file.filename}` : null;
 
     const transaction = await prisma.transaction.create({
       data: {
@@ -81,16 +111,20 @@ router.post('/', async (req, res) => {
         category,
         description,
         partyName: partyName || '—',
-        amount,
+        amount: parsedAmount,
         balance: newBalance,
+        laborId: laborId || null,
+        bankId: bankId || null,
+        paymentMode: paymentMode || 'cash',
+        attachment,
         userId: req.user.id,
       },
     });
 
     res.status(201).json(transaction);
   } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: 'Server error' });
+    console.error('Ledger POST error:', err);
+    res.status(500).json({ error: 'Server error', details: err.message });
   }
 });
 

@@ -7,7 +7,9 @@ const navKeys = [
   { to: '/inventory', key: 'nav.inventory' },
   { to: '/sell', key: 'nav.newSale' },
   { to: '/orders', key: 'nav.orders' },
-  { to: '/roznamcha', key: 'nav.roznamcha' },
+  { to: '/ledger', key: 'nav.ledger' },
+  { to: '/banks', key: 'nav.banks' },
+  { to: '/labor', key: 'nav.labor' },
 ];
 
 export default function Layout() {

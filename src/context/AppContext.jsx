@@ -24,6 +24,8 @@ export function AppProvider({ children }) {
   });
   const [inventory, setInventory] = useState([]);
   const [orders, setOrders] = useState([]);
+  const [banks, setBanks] = useState([]);
+  const [labor, setLabor] = useState([]);
   const [loading, setLoading] = useState(false);
 
   const login = async (username, password) => {
@@ -48,6 +50,8 @@ export function AppProvider({ children }) {
     setUser(null);
     setInventory([]);
     setOrders([]);
+    setBanks([]);
+    setLabor([]);
   };
 
   const fetchInventory = useCallback(async () => {
@@ -83,15 +87,66 @@ export function AppProvider({ children }) {
     }
   }, []);
 
-  const createOrder = async (orderItems, paymentType, customerName) => {
+  const createOrder = async (orderItems, paymentType, customerName, bankId) => {
     const { data } = await API.post('/orders', {
       items: orderItems,
       paymentType,
       customerName,
+      bankId,
     });
     await fetchInventory();
     await fetchOrders();
     return data;
+  };
+
+  // Banks
+  const fetchBanks = useCallback(async () => {
+    try {
+      const { data } = await API.get('/banks');
+      setBanks(data);
+    } catch (err) {
+      if (err.response?.status === 401) logout();
+    }
+  }, []);
+
+  const addBank = async (bank) => {
+    await API.post('/banks', bank);
+    await fetchBanks();
+  };
+
+  const updateBank = async (id, updates) => {
+    await API.put(`/banks/${id}`, updates);
+    await fetchBanks();
+  };
+
+  const deleteBank = async (id) => {
+    await API.delete(`/banks/${id}`);
+    await fetchBanks();
+  };
+
+  // Labor
+  const fetchLabor = useCallback(async () => {
+    try {
+      const { data } = await API.get('/labor');
+      setLabor(data);
+    } catch (err) {
+      if (err.response?.status === 401) logout();
+    }
+  }, []);
+
+  const addLabor = async (laborData) => {
+    await API.post('/labor', laborData);
+    await fetchLabor();
+  };
+
+  const updateLabor = async (id, updates) => {
+    await API.put(`/labor/${id}`, updates);
+    await fetchLabor();
+  };
+
+  const deleteLabor = async (id) => {
+    await API.delete(`/labor/${id}`);
+    await fetchLabor();
   };
 
   // Load data when user logs in
@@ -99,8 +154,10 @@ export function AppProvider({ children }) {
     if (user) {
       fetchInventory();
       fetchOrders();
+      fetchBanks();
+      fetchLabor();
     }
-  }, [user, fetchInventory, fetchOrders]);
+  }, [user, fetchInventory, fetchOrders, fetchBanks, fetchLabor]);
 
   return (
     <AppContext.Provider
@@ -108,6 +165,8 @@ export function AppProvider({ children }) {
         user, login, register, logout, loading,
         inventory, addItem, updateItem, deleteItem, fetchInventory,
         orders, createOrder, fetchOrders,
+        banks, addBank, updateBank, deleteBank, fetchBanks,
+        labor, addLabor, updateLabor, deleteLabor, fetchLabor,
       }}
     >
       {children}

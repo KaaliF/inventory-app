@@ -50,7 +50,7 @@ router.get('/', async (req, res) => {
 // POST /api/orders
 router.post('/', async (req, res) => {
   try {
-    const { items, paymentType, customerName } = req.body;
+    const { items, paymentType, customerName, bankId } = req.body;
 
     if (!items || !items.length || !paymentType) {
       return res.status(400).json({ error: 'Items and paymentType required' });
@@ -82,6 +82,7 @@ router.post('/', async (req, res) => {
           customerName: customerName || 'Walk-in Customer',
           paymentType,
           total,
+          bankId: bankId || null,
           userId: req.user.id,
           items: {
             create: items.map((oi) => ({
@@ -120,6 +121,27 @@ router.post('/', async (req, res) => {
             partyName: customerName || 'Walk-in Customer',
             amount: total,
             balance: lastBalance + total,
+            paymentMode: 'cash',
+            orderId: newOrder.id,
+            userId: req.user.id,
+          },
+        });
+      } else if (paymentType === 'bank') {
+        let bankName = 'Bank';
+        if (bankId) {
+          const bank = await tx.bank.findUnique({ where: { id: bankId } });
+          if (bank) bankName = bank.name;
+        }
+        await tx.transaction.create({
+          data: {
+            type: 'jama',
+            category: 'sale',
+            description: `Bank Sale (${bankName}): ${itemNames} (${newOrder.orderCode})`,
+            partyName: customerName || 'Walk-in Customer',
+            amount: total,
+            balance: lastBalance + total,
+            bankId: bankId || null,
+            paymentMode: 'bank',
             orderId: newOrder.id,
             userId: req.user.id,
           },
@@ -133,6 +155,7 @@ router.post('/', async (req, res) => {
             partyName: customerName || 'Walk-in Customer',
             amount: total,
             balance: lastBalance - total,
+            paymentMode: 'credit',
             orderId: newOrder.id,
             userId: req.user.id,
           },
@@ -170,6 +193,7 @@ router.get('/stats', async (req, res) => {
     const totalRevenue = orders.reduce((sum, o) => sum + o.total, 0);
     const cashOrders = orders.filter((o) => o.paymentType === 'cash');
     const creditOrders = orders.filter((o) => o.paymentType === 'credit');
+    const bankOrders = orders.filter((o) => o.paymentType === 'bank');
 
     res.json({
       totalOrders,
@@ -178,6 +202,8 @@ router.get('/stats', async (req, res) => {
       cashCount: cashOrders.length,
       creditTotal: creditOrders.reduce((sum, o) => sum + o.total, 0),
       creditCount: creditOrders.length,
+      bankTotal: bankOrders.reduce((sum, o) => sum + o.total, 0),
+      bankCount: bankOrders.length,
     });
   } catch (err) {
     res.status(500).json({ error: 'Server error' });

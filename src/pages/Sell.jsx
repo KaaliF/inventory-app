@@ -3,10 +3,11 @@ import { useApp } from '../context/AppContext';
 import { useLanguage } from '../context/LanguageContext';
 
 export default function Sell() {
-  const { inventory, createOrder } = useApp();
+  const { inventory, banks, createOrder } = useApp();
   const { t } = useLanguage();
   const [customerName, setCustomerName] = useState('');
   const [paymentType, setPaymentType] = useState('cash');
+  const [bankId, setBankId] = useState('');
   const [cart, setCart] = useState([]);
   const [selectedItem, setSelectedItem] = useState('');
   const [qty, setQty] = useState(1);
@@ -47,13 +48,23 @@ export default function Sell() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (cart.length === 0) return;
+    if (paymentType === 'bank' && !bankId) {
+      alert('Please select a bank');
+      return;
+    }
     setSubmitting(true);
     try {
-      const order = await createOrder(cart, paymentType, customerName || t('sell.walkIn'));
+      const order = await createOrder(
+        cart,
+        paymentType,
+        customerName || t('sell.walkIn'),
+        paymentType === 'bank' ? bankId : null
+      );
       setSuccess(order);
       setCart([]);
       setCustomerName('');
       setPaymentType('cash');
+      setBankId('');
       setTimeout(() => setSuccess(null), 4000);
     } catch (err) {
       alert(err.response?.data?.error || 'Error creating order');
@@ -163,10 +174,10 @@ export default function Sell() {
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">{t('sell.paymentType')}</label>
-              <div className="grid grid-cols-2 gap-2">
+              <div className="grid grid-cols-3 gap-2">
                 <button
                   type="button"
-                  onClick={() => setPaymentType('cash')}
+                  onClick={() => { setPaymentType('cash'); setBankId(''); }}
                   className={`py-3 rounded-lg text-sm font-medium border-2 transition-all cursor-pointer ${
                     paymentType === 'cash'
                       ? 'border-green-500 bg-green-50 text-green-700'
@@ -178,7 +189,7 @@ export default function Sell() {
                 </button>
                 <button
                   type="button"
-                  onClick={() => setPaymentType('credit')}
+                  onClick={() => { setPaymentType('credit'); setBankId(''); }}
                   className={`py-3 rounded-lg text-sm font-medium border-2 transition-all cursor-pointer ${
                     paymentType === 'credit'
                       ? 'border-red-500 bg-red-50 text-red-700'
@@ -188,8 +199,39 @@ export default function Sell() {
                   {t('sell.credit')}
                   <span className="block text-xs mt-0.5 opacity-70">{t('sell.creditSub')}</span>
                 </button>
+                <button
+                  type="button"
+                  onClick={() => setPaymentType('bank')}
+                  className={`py-3 rounded-lg text-sm font-medium border-2 transition-all cursor-pointer ${
+                    paymentType === 'bank'
+                      ? 'border-blue-500 bg-blue-50 text-blue-700'
+                      : 'border-gray-200 text-gray-600 hover:border-gray-300'
+                  }`}
+                >
+                  {t('sell.bank')}
+                  <span className="block text-xs mt-0.5 opacity-70">{t('sell.bankSub')}</span>
+                </button>
               </div>
             </div>
+
+            {paymentType === 'bank' && (
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">{t('sell.selectBank')}</label>
+                <select
+                  value={bankId}
+                  onChange={(e) => setBankId(e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 outline-none"
+                  required
+                >
+                  <option value="">{t('sell.selectBank')}</option>
+                  {banks.map((bank) => (
+                    <option key={bank.id} value={bank.id}>
+                      {bank.name} {bank.accountNo ? `(${bank.accountNo})` : ''}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            )}
 
             <div className="border-t border-gray-200 pt-4">
               <div className="flex justify-between items-center mb-1">

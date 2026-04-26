@@ -15,17 +15,44 @@ model User {
   createdAt    DateTime      @default(now())
   orders       Order[]
   transactions Transaction[]
+  banks        Bank[]
+  labors       Labor[]
+}
+
+model Bank {
+  id        String   @id @default(cuid())
+  name      String
+  accountNo String?
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Labor {
+  id        String   @id @default(cuid())
+  name      String
+  phone     String?
+  dailyRate Float?
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 model Transaction {
   id          String   @id @default(cuid())
   type        String   // "jama" (in) or "naam" (out)
-  category    String   // "sale", "purchase", "expense", "udhar_wapsi", "udhar_diya", "other"
+  category    String   // "sale", "purchase", "expense", "udhar_wapsi", "udhar_diya", "labor_payment", "other"
   description String
   partyName   String
   amount      Float
   balance     Float    @default(0)
   orderId     String?
+  bankId      String?
+  laborId     String?
+  paymentMode String?  // "cash", "credit", "bank"
+  attachment  String?  // file path for uploaded image
   createdAt   DateTime @default(now())
   userId      String
   user        User     @relation(fields: [userId], references: [id])
@@ -37,6 +64,7 @@ model Item {
   name      String
   quantity  Int         @default(0)
   price     Float
+  unit      String      @default("qty")
   createdAt DateTime    @default(now())
   updatedAt DateTime    @updatedAt
   orderItems OrderItem[]
@@ -48,6 +76,7 @@ model Order {
   customerName String
   paymentType  String
   total        Float
+  bankId       String?
   createdAt    DateTime    @default(now())
   userId       String
   user         User        @relation(fields: [userId], references: [id])

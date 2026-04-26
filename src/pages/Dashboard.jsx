@@ -11,8 +11,10 @@ export default function Dashboard() {
   const totalRevenue = orders.reduce((sum, o) => sum + o.total, 0);
   const cashOrders = orders.filter((o) => o.paymentType === 'cash');
   const creditOrders = orders.filter((o) => o.paymentType === 'credit');
+  const bankOrders = orders.filter((o) => o.paymentType === 'bank');
   const cashTotal = cashOrders.reduce((sum, o) => sum + o.total, 0);
   const creditTotal = creditOrders.reduce((sum, o) => sum + o.total, 0);
+  const bankTotal = bankOrders.reduce((sum, o) => sum + o.total, 0);
   const lowStock = inventory.filter((item) => item.quantity <= 10);
 
   const stats = [
@@ -38,7 +40,7 @@ export default function Dashboard() {
         ))}
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
           <h3 className="font-semibold text-gray-900 mb-2">{t('dashboard.cashSales')}</h3>
           <p className="text-3xl font-bold text-green-600">Rs {cashTotal.toLocaleString()}</p>
@@ -48,6 +50,11 @@ export default function Dashboard() {
           <h3 className="font-semibold text-gray-900 mb-2">{t('dashboard.creditSales')}</h3>
           <p className="text-3xl font-bold text-red-500">Rs {creditTotal.toLocaleString()}</p>
           <p className="text-sm text-gray-500 mt-1">{creditOrders.length} {t('dashboard.orders')}</p>
+        </div>
+        <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+          <h3 className="font-semibold text-gray-900 mb-2">{t('dashboard.bankSales')}</h3>
+          <p className="text-3xl font-bold text-blue-600">Rs {bankTotal.toLocaleString()}</p>
+          <p className="text-sm text-gray-500 mt-1">{bankOrders.length} {t('dashboard.orders')}</p>
         </div>
       </div>
 
@@ -80,10 +87,16 @@ export default function Dashboard() {
                     className={`px-2 py-0.5 rounded text-xs font-medium ${
                       order.paymentType === 'cash'
                         ? 'bg-green-100 text-green-700'
+                        : order.paymentType === 'bank'
+                        ? 'bg-blue-100 text-blue-700'
                         : 'bg-red-100 text-red-700'
                     }`}
                   >
-                    {order.paymentType === 'cash' ? t('dashboard.cash') : t('dashboard.credit')}
+                    {order.paymentType === 'cash'
+                      ? t('dashboard.cash')
+                      : order.paymentType === 'bank'
+                      ? t('dashboard.bank')
+                      : t('dashboard.credit')}
                   </span>
                   <span className="font-semibold text-gray-900">Rs {order.total.toLocaleString()}</span>
                 </div>

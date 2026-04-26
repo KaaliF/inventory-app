@@ -7,7 +7,7 @@ export default function Inventory() {
   const { t } = useLanguage();
   const [showForm, setShowForm] = useState(false);
   const [editingId, setEditingId] = useState(null);
-  const [form, setForm] = useState({ name: '', quantity: '', price: '' });
+  const [form, setForm] = useState({ name: '', quantity: '', price: '', unit: 'qty' });
   const [search, setSearch] = useState('');
   const [saving, setSaving] = useState(false);
 
@@ -18,7 +18,7 @@ export default function Inventory() {
   );
 
   const resetForm = () => {
-    setForm({ name: '', quantity: '', price: '' });
+    setForm({ name: '', quantity: '', price: '', unit: 'qty' });
     setShowForm(false);
     setEditingId(null);
   };
@@ -32,12 +32,14 @@ export default function Inventory() {
           name: form.name,
           quantity: Number(form.quantity),
           price: Number(form.price),
+          unit: form.unit,
         });
       } else {
         await addItem({
           name: form.name,
           quantity: Number(form.quantity),
           price: Number(form.price),
+          unit: form.unit,
         });
       }
       resetForm();
@@ -50,7 +52,12 @@ export default function Inventory() {
 
   const startEdit = (item) => {
     setEditingId(item.id);
-    setForm({ name: item.name, quantity: String(item.quantity), price: String(item.price) });
+    setForm({
+      name: item.name,
+      quantity: String(item.quantity),
+      price: String(item.price),
+      unit: item.unit || 'qty',
+    });
     setShowForm(true);
   };
 
@@ -89,7 +96,7 @@ export default function Inventory() {
           <h3 className="font-semibold text-gray-900 mb-4">
             {editingId ? t('inventory.editItem') : t('inventory.addNewItem')}
           </h3>
-          <form onSubmit={handleSubmit} className="grid grid-cols-1 sm:grid-cols-4 gap-4">
+          <form onSubmit={handleSubmit} className="grid grid-cols-1 sm:grid-cols-5 gap-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">{t('inventory.itemName')}</label>
               <input
@@ -122,6 +129,17 @@ export default function Inventory() {
                 required
               />
             </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">{t('inventory.unit')}</label>
+              <select
+                value={form.unit}
+                onChange={(e) => setForm({ ...form, unit: e.target.value })}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 outline-none"
+              >
+                <option value="qty">{t('inventory.qty')}</option>
+                <option value="kg">{t('inventory.kg')}</option>
+              </select>
+            </div>
             <div className="flex items-end gap-2">
               <button
                 type="submit"
@@ -149,6 +167,7 @@ export default function Inventory() {
               <th className="text-left px-6 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">{t('inventory.id')}</th>
               <th className="text-left px-6 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">{t('inventory.name')}</th>
               <th className="text-left px-6 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">{t('inventory.quantity')}</th>
+              <th className="text-left px-6 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">{t('inventory.unit')}</th>
               <th className="text-left px-6 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">{t('inventory.price')}</th>
               <th className="text-right px-6 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">{t('inventory.actions')}</th>
             </tr>
@@ -171,6 +190,11 @@ export default function Inventory() {
                     {item.quantity}
                   </span>
                 </td>
+                <td className="px-6 py-4 text-sm text-gray-600">
+                  <span className="px-2 py-0.5 rounded bg-gray-100 text-xs font-medium text-gray-700">
+                    {item.unit === 'kg' ? 'KG' : 'QTY'}
+                  </span>
+                </td>
                 <td className="px-6 py-4 text-sm text-gray-700">Rs {item.price.toLocaleString()}</td>
                 <td className="px-6 py-4 text-right space-x-2">
                   <button
@@ -190,7 +214,7 @@ export default function Inventory() {
             ))}
             {filtered.length === 0 && (
               <tr>
-                <td colSpan={5} className="px-6 py-12 text-center text-gray-400">
+                <td colSpan={6} className="px-6 py-12 text-center text-gray-400">
                   {t('inventory.noItems')}
                 </td>
               </tr>
