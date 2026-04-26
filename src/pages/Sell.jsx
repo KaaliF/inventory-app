@@ -1,8 +1,10 @@
 import { useState } from 'react';
 import { useApp } from '../context/AppContext';
+import { useLanguage } from '../context/LanguageContext';
 
 export default function Sell() {
   const { inventory, createOrder } = useApp();
+  const { t } = useLanguage();
   const [customerName, setCustomerName] = useState('');
   const [paymentType, setPaymentType] = useState('cash');
   const [cart, setCart] = useState([]);
@@ -47,7 +49,7 @@ export default function Sell() {
     if (cart.length === 0) return;
     setSubmitting(true);
     try {
-      const order = await createOrder(cart, paymentType, customerName || 'Walk-in Customer');
+      const order = await createOrder(cart, paymentType, customerName || t('sell.walkIn'));
       setSuccess(order);
       setCart([]);
       setCustomerName('');
@@ -62,29 +64,30 @@ export default function Sell() {
 
   return (
     <div className="space-y-6">
-      <h2 className="text-2xl font-bold text-gray-900">New Sale</h2>
+      <h2 className="text-2xl font-bold text-gray-900">{t('sell.title')}</h2>
 
       {success && (
         <div className="bg-green-50 border border-green-200 text-green-700 px-6 py-4 rounded-xl">
-          Order <span className="font-bold">{success.orderCode}</span> created successfully!
-          Total: Rs {success.total.toLocaleString()} ({success.paymentType.toUpperCase()})
+          {t('sell.orderSuccess')}{' '}
+          <span className="font-bold">{success.orderCode}</span> —{' '}
+          Rs {success.total.toLocaleString()} ({success.paymentType.toUpperCase()})
         </div>
       )}
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="lg:col-span-2 space-y-4">
           <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
-            <h3 className="font-semibold text-gray-900 mb-4">Add Items</h3>
+            <h3 className="font-semibold text-gray-900 mb-4">{t('sell.addItems')}</h3>
             <div className="flex flex-col sm:flex-row gap-3">
               <select
                 value={selectedItem}
                 onChange={(e) => setSelectedItem(e.target.value)}
                 className="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 outline-none"
               >
-                <option value="">Select Item...</option>
+                <option value="">{t('sell.selectItem')}</option>
                 {availableItems.map((item) => (
                   <option key={item.id} value={item.id}>
-                    {item.name} — Rs {item.price.toLocaleString()} (Stock: {item.quantity})
+                    {item.name} — Rs {item.price.toLocaleString()} ({t('sell.stock')}: {item.quantity})
                   </option>
                 ))}
               </select>
@@ -94,7 +97,7 @@ export default function Sell() {
                 value={qty}
                 onChange={(e) => setQty(Number(e.target.value))}
                 className="w-24 px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 outline-none"
-                placeholder="Qty"
+                placeholder={t('sell.qty')}
               />
               <button
                 type="button"
@@ -102,7 +105,7 @@ export default function Sell() {
                 disabled={!selectedItem}
                 className="px-4 py-2 bg-indigo-600 text-white rounded-lg text-sm font-medium hover:bg-indigo-700 transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                Add
+                {t('sell.add')}
               </button>
             </div>
           </div>
@@ -112,10 +115,10 @@ export default function Sell() {
               <table className="w-full">
                 <thead>
                   <tr className="bg-gray-50 border-b border-gray-200">
-                    <th className="text-left px-6 py-3 text-xs font-semibold text-gray-500 uppercase">Item</th>
-                    <th className="text-left px-6 py-3 text-xs font-semibold text-gray-500 uppercase">Price</th>
-                    <th className="text-left px-6 py-3 text-xs font-semibold text-gray-500 uppercase">Qty</th>
-                    <th className="text-left px-6 py-3 text-xs font-semibold text-gray-500 uppercase">Subtotal</th>
+                    <th className="text-left px-6 py-3 text-xs font-semibold text-gray-500 uppercase">{t('sell.item')}</th>
+                    <th className="text-left px-6 py-3 text-xs font-semibold text-gray-500 uppercase">{t('sell.price')}</th>
+                    <th className="text-left px-6 py-3 text-xs font-semibold text-gray-500 uppercase">{t('sell.qty')}</th>
+                    <th className="text-left px-6 py-3 text-xs font-semibold text-gray-500 uppercase">{t('sell.subtotal')}</th>
                     <th className="text-right px-6 py-3 text-xs font-semibold text-gray-500 uppercase"></th>
                   </tr>
                 </thead>
@@ -133,7 +136,7 @@ export default function Sell() {
                           onClick={() => removeFromCart(c.id)}
                           className="text-red-500 hover:text-red-700 text-sm cursor-pointer"
                         >
-                          Remove
+                          {t('sell.remove')}
                         </button>
                       </td>
                     </tr>
@@ -145,21 +148,21 @@ export default function Sell() {
         </div>
 
         <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 h-fit">
-          <h3 className="font-semibold text-gray-900 mb-4">Order Summary</h3>
+          <h3 className="font-semibold text-gray-900 mb-4">{t('sell.orderSummary')}</h3>
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Customer Name</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">{t('sell.customerName')}</label>
               <input
                 type="text"
                 value={customerName}
                 onChange={(e) => setCustomerName(e.target.value)}
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 outline-none"
-                placeholder="Walk-in Customer"
+                placeholder={t('sell.walkIn')}
               />
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Payment Type</label>
+              <label className="block text-sm font-medium text-gray-700 mb-2">{t('sell.paymentType')}</label>
               <div className="grid grid-cols-2 gap-2">
                 <button
                   type="button"
@@ -170,8 +173,8 @@ export default function Sell() {
                       : 'border-gray-200 text-gray-600 hover:border-gray-300'
                   }`}
                 >
-                  Cash
-                  <span className="block text-xs mt-0.5 opacity-70">Debit</span>
+                  {t('sell.cash')}
+                  <span className="block text-xs mt-0.5 opacity-70">{t('sell.cashSub')}</span>
                 </button>
                 <button
                   type="button"
@@ -182,19 +185,19 @@ export default function Sell() {
                       : 'border-gray-200 text-gray-600 hover:border-gray-300'
                   }`}
                 >
-                  Credit
-                  <span className="block text-xs mt-0.5 opacity-70">Udhar</span>
+                  {t('sell.credit')}
+                  <span className="block text-xs mt-0.5 opacity-70">{t('sell.creditSub')}</span>
                 </button>
               </div>
             </div>
 
             <div className="border-t border-gray-200 pt-4">
               <div className="flex justify-between items-center mb-1">
-                <span className="text-sm text-gray-500">Items</span>
+                <span className="text-sm text-gray-500">{t('sell.items')}</span>
                 <span className="text-sm text-gray-700">{cart.length}</span>
               </div>
               <div className="flex justify-between items-center">
-                <span className="text-lg font-bold text-gray-900">Total</span>
+                <span className="text-lg font-bold text-gray-900">{t('sell.total')}</span>
                 <span className="text-lg font-bold text-indigo-600">Rs {total.toLocaleString()}</span>
               </div>
             </div>
@@ -204,7 +207,7 @@ export default function Sell() {
               disabled={cart.length === 0 || submitting}
               className="w-full py-3 bg-indigo-600 text-white rounded-lg font-medium hover:bg-indigo-700 transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {submitting ? 'Processing...' : 'Complete Sale'}
+              {submitting ? t('sell.processing') : t('sell.completeSale')}
             </button>
           </form>
         </div>

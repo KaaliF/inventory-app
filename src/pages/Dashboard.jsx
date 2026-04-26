@@ -1,7 +1,9 @@
 import { useApp } from '../context/AppContext';
+import { useLanguage } from '../context/LanguageContext';
 
 export default function Dashboard() {
   const { inventory, orders } = useApp();
+  const { t } = useLanguage();
 
   const totalItems = inventory.reduce((sum, item) => sum + item.quantity, 0);
   const totalProducts = inventory.length;
@@ -14,15 +16,15 @@ export default function Dashboard() {
   const lowStock = inventory.filter((item) => item.quantity <= 10);
 
   const stats = [
-    { label: 'Total Products', value: totalProducts, color: 'bg-blue-500' },
-    { label: 'Total Stock', value: totalItems, color: 'bg-green-500' },
-    { label: 'Total Orders', value: totalOrders, color: 'bg-purple-500' },
-    { label: 'Revenue', value: `Rs ${totalRevenue.toLocaleString()}`, color: 'bg-indigo-500' },
+    { label: t('dashboard.totalProducts'), value: totalProducts, color: 'bg-blue-500' },
+    { label: t('dashboard.totalStock'), value: totalItems, color: 'bg-green-500' },
+    { label: t('dashboard.totalOrders'), value: totalOrders, color: 'bg-purple-500' },
+    { label: t('dashboard.revenue'), value: `Rs ${totalRevenue.toLocaleString()}`, color: 'bg-indigo-500' },
   ];
 
   return (
     <div className="space-y-6">
-      <h2 className="text-2xl font-bold text-gray-900">Dashboard</h2>
+      <h2 className="text-2xl font-bold text-gray-900">{t('dashboard.title')}</h2>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {stats.map((stat) => (
@@ -38,25 +40,25 @@ export default function Dashboard() {
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
-          <h3 className="font-semibold text-gray-900 mb-2">Cash Sales (Debit)</h3>
+          <h3 className="font-semibold text-gray-900 mb-2">{t('dashboard.cashSales')}</h3>
           <p className="text-3xl font-bold text-green-600">Rs {cashTotal.toLocaleString()}</p>
-          <p className="text-sm text-gray-500 mt-1">{cashOrders.length} orders</p>
+          <p className="text-sm text-gray-500 mt-1">{cashOrders.length} {t('dashboard.orders')}</p>
         </div>
         <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
-          <h3 className="font-semibold text-gray-900 mb-2">Credit Sales (Udhar)</h3>
+          <h3 className="font-semibold text-gray-900 mb-2">{t('dashboard.creditSales')}</h3>
           <p className="text-3xl font-bold text-red-500">Rs {creditTotal.toLocaleString()}</p>
-          <p className="text-sm text-gray-500 mt-1">{creditOrders.length} orders</p>
+          <p className="text-sm text-gray-500 mt-1">{creditOrders.length} {t('dashboard.orders')}</p>
         </div>
       </div>
 
       {lowStock.length > 0 && (
         <div className="bg-amber-50 border border-amber-200 rounded-xl p-6">
-          <h3 className="font-semibold text-amber-800 mb-3">Low Stock Alert</h3>
+          <h3 className="font-semibold text-amber-800 mb-3">{t('dashboard.lowStock')}</h3>
           <div className="space-y-2">
             {lowStock.map((item) => (
               <div key={item.id} className="flex justify-between text-sm">
                 <span className="text-amber-700">{item.name} ({item.itemCode})</span>
-                <span className="font-medium text-amber-900">{item.quantity} left</span>
+                <span className="font-medium text-amber-900">{item.quantity} {t('dashboard.left')}</span>
               </div>
             ))}
           </div>
@@ -65,7 +67,7 @@ export default function Dashboard() {
 
       {orders.length > 0 && (
         <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
-          <h3 className="font-semibold text-gray-900 mb-4">Recent Orders</h3>
+          <h3 className="font-semibold text-gray-900 mb-4">{t('dashboard.recentOrders')}</h3>
           <div className="space-y-3">
             {orders.slice(0, 5).map((order) => (
               <div key={order.id} className="flex items-center justify-between py-2 border-b border-gray-50 last:border-0">
@@ -81,7 +83,7 @@ export default function Dashboard() {
                         : 'bg-red-100 text-red-700'
                     }`}
                   >
-                    {order.paymentType === 'cash' ? 'CASH' : 'CREDIT'}
+                    {order.paymentType === 'cash' ? t('dashboard.cash') : t('dashboard.credit')}
                   </span>
                   <span className="font-semibold text-gray-900">Rs {order.total.toLocaleString()}</span>
                 </div>

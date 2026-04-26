@@ -1,8 +1,10 @@
 import { useState } from 'react';
 import { useApp } from '../context/AppContext';
+import { useLanguage } from '../context/LanguageContext';
 
 export default function Inventory() {
   const { inventory, addItem, updateItem, deleteItem } = useApp();
+  const { t } = useLanguage();
   const [showForm, setShowForm] = useState(false);
   const [editingId, setEditingId] = useState(null);
   const [form, setForm] = useState({ name: '', quantity: '', price: '' });
@@ -53,7 +55,7 @@ export default function Inventory() {
   };
 
   const handleDelete = async (id) => {
-    if (!confirm('Are you sure?')) return;
+    if (!confirm(t('inventory.confirmDelete'))) return;
     try {
       await deleteItem(id);
     } catch (err) {
@@ -64,11 +66,11 @@ export default function Inventory() {
   return (
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <h2 className="text-2xl font-bold text-gray-900">Inventory</h2>
+        <h2 className="text-2xl font-bold text-gray-900">{t('inventory.title')}</h2>
         <div className="flex gap-3">
           <input
             type="text"
-            placeholder="Search items..."
+            placeholder={t('inventory.search')}
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             className="px-4 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none"
@@ -77,7 +79,7 @@ export default function Inventory() {
             onClick={() => { resetForm(); setShowForm(true); }}
             className="px-4 py-2 bg-indigo-600 text-white rounded-lg text-sm font-medium hover:bg-indigo-700 transition-colors cursor-pointer whitespace-nowrap"
           >
-            + Add Item
+            {t('inventory.addItem')}
           </button>
         </div>
       </div>
@@ -85,11 +87,11 @@ export default function Inventory() {
       {showForm && (
         <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
           <h3 className="font-semibold text-gray-900 mb-4">
-            {editingId ? 'Edit Item' : 'Add New Item'}
+            {editingId ? t('inventory.editItem') : t('inventory.addNewItem')}
           </h3>
           <form onSubmit={handleSubmit} className="grid grid-cols-1 sm:grid-cols-4 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Item Name</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">{t('inventory.itemName')}</label>
               <input
                 type="text"
                 value={form.name}
@@ -99,7 +101,7 @@ export default function Inventory() {
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Quantity</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">{t('inventory.quantity')}</label>
               <input
                 type="number"
                 min="0"
@@ -110,7 +112,7 @@ export default function Inventory() {
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Price (Rs)</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">{t('inventory.price')}</label>
               <input
                 type="number"
                 min="0"
@@ -126,14 +128,14 @@ export default function Inventory() {
                 disabled={saving}
                 className="px-4 py-2 bg-indigo-600 text-white rounded-lg text-sm font-medium hover:bg-indigo-700 transition-colors cursor-pointer disabled:opacity-50"
               >
-                {saving ? 'Saving...' : editingId ? 'Update' : 'Add'}
+                {saving ? t('inventory.saving') : editingId ? t('inventory.update') : t('inventory.add')}
               </button>
               <button
                 type="button"
                 onClick={resetForm}
                 className="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg text-sm font-medium hover:bg-gray-200 transition-colors cursor-pointer"
               >
-                Cancel
+                {t('inventory.cancel')}
               </button>
             </div>
           </form>
@@ -144,11 +146,11 @@ export default function Inventory() {
         <table className="w-full">
           <thead>
             <tr className="bg-gray-50 border-b border-gray-200">
-              <th className="text-left px-6 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">ID</th>
-              <th className="text-left px-6 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">Name</th>
-              <th className="text-left px-6 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">Quantity</th>
-              <th className="text-left px-6 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">Price</th>
-              <th className="text-right px-6 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">Actions</th>
+              <th className="text-left px-6 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">{t('inventory.id')}</th>
+              <th className="text-left px-6 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">{t('inventory.name')}</th>
+              <th className="text-left px-6 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">{t('inventory.quantity')}</th>
+              <th className="text-left px-6 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">{t('inventory.price')}</th>
+              <th className="text-right px-6 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">{t('inventory.actions')}</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-100">
@@ -175,13 +177,13 @@ export default function Inventory() {
                     onClick={() => startEdit(item)}
                     className="text-indigo-600 hover:text-indigo-800 text-sm font-medium cursor-pointer"
                   >
-                    Edit
+                    {t('inventory.edit')}
                   </button>
                   <button
                     onClick={() => handleDelete(item.id)}
                     className="text-red-500 hover:text-red-700 text-sm font-medium cursor-pointer"
                   >
-                    Delete
+                    {t('inventory.delete')}
                   </button>
                 </td>
               </tr>
@@ -189,7 +191,7 @@ export default function Inventory() {
             {filtered.length === 0 && (
               <tr>
                 <td colSpan={5} className="px-6 py-12 text-center text-gray-400">
-                  No items found
+                  {t('inventory.noItems')}
                 </td>
               </tr>
             )}

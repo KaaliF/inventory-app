@@ -1,16 +1,18 @@
 import { NavLink, Outlet, useNavigate } from 'react-router-dom';
 import { useApp } from '../context/AppContext';
+import { useLanguage } from '../context/LanguageContext';
 
-const navItems = [
-  { to: '/', label: 'Dashboard' },
-  { to: '/inventory', label: 'Inventory' },
-  { to: '/sell', label: 'New Sale' },
-  { to: '/orders', label: 'Orders' },
-  { to: '/roznamcha', label: 'Roznamcha' },
+const navKeys = [
+  { to: '/', key: 'nav.dashboard' },
+  { to: '/inventory', key: 'nav.inventory' },
+  { to: '/sell', key: 'nav.newSale' },
+  { to: '/orders', key: 'nav.orders' },
+  { to: '/roznamcha', key: 'nav.roznamcha' },
 ];
 
 export default function Layout() {
   const { user, logout } = useApp();
+  const { t, toggleLanguage, isUrdu } = useLanguage();
   const navigate = useNavigate();
 
   const handleLogout = () => {
@@ -19,14 +21,14 @@ export default function Layout() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50" dir={isUrdu ? 'rtl' : 'ltr'}>
       {/* Top nav */}
       <nav className="bg-white border-b border-gray-200 shadow-sm">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between h-16">
             <div className="flex items-center gap-1">
               <span className="text-xl font-bold text-indigo-600 mr-6">StockFlow</span>
-              {navItems.map((item) => (
+              {navKeys.map((item) => (
                 <NavLink
                   key={item.to}
                   to={item.to}
@@ -39,11 +41,17 @@ export default function Layout() {
                     }`
                   }
                 >
-                  {item.label}
+                  {t(item.key)}
                 </NavLink>
               ))}
             </div>
             <div className="flex items-center gap-3">
+              <button
+                onClick={toggleLanguage}
+                className="px-3 py-1.5 text-sm bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 transition-colors cursor-pointer font-medium"
+              >
+                {isUrdu ? 'English' : 'اردو'}
+              </button>
               <span className="text-sm text-gray-500">
                 {user?.username}
               </span>
@@ -51,7 +59,7 @@ export default function Layout() {
                 onClick={handleLogout}
                 className="px-3 py-1.5 text-sm bg-red-50 text-red-600 rounded-md hover:bg-red-100 transition-colors cursor-pointer"
               >
-                Logout
+                {t('nav.logout')}
               </button>
             </div>
           </div>
