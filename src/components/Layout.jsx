@@ -6,6 +6,7 @@ const navItems = [
   { to: '/inventory', label: 'Inventory' },
   { to: '/sell', label: 'New Sale' },
   { to: '/orders', label: 'Orders' },
+  { to: '/roznamcha', label: 'Roznamcha' },
 ];
 
 export default function Layout() {

@@ -8,12 +8,27 @@ datasource db {
 }
 
 model User {
-  id        String   @id @default(cuid())
-  username  String   @unique
-  password  String
-  role      String   @default("admin")
-  createdAt DateTime @default(now())
-  orders    Order[]
+  id           String        @id @default(cuid())
+  username     String        @unique
+  password     String
+  role         String        @default("admin")
+  createdAt    DateTime      @default(now())
+  orders       Order[]
+  transactions Transaction[]
+}
+
+model Transaction {
+  id          String   @id @default(cuid())
+  type        String   // "jama" (in) or "naam" (out)
+  category    String   // "sale", "purchase", "expense", "udhar_wapsi", "udhar_diya", "other"
+  description String
+  partyName   String
+  amount      Float
+  balance     Float    @default(0)
+  orderId     String?
+  createdAt   DateTime @default(now())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id])
 }
 
 model Item {

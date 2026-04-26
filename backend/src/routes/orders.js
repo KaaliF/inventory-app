@@ -106,6 +106,39 @@ router.post('/', async (req, res) => {
         });
       }
 
+      // Auto-create roznamcha entry
+      const lastTx = await tx.transaction.findFirst({ orderBy: { createdAt: 'desc' } });
+      const lastBalance = lastTx ? lastTx.balance : 0;
+      const itemNames = newOrder.items.map((oi) => oi.item.name).join(', ');
+
+      if (paymentType === 'cash') {
+        await tx.transaction.create({
+          data: {
+            type: 'jama',
+            category: 'sale',
+            description: `Sale: ${itemNames} (${newOrder.orderCode})`,
+            partyName: customerName || 'Walk-in Customer',
+            amount: total,
+            balance: lastBalance + total,
+            orderId: newOrder.id,
+            userId: req.user.id,
+          },
+        });
+      } else {
+        await tx.transaction.create({
+          data: {
+            type: 'naam',
+            category: 'udhar_diya',
+            description: `Udhar Sale: ${itemNames} (${newOrder.orderCode})`,
+            partyName: customerName || 'Walk-in Customer',
+            amount: total,
+            balance: lastBalance - total,
+            orderId: newOrder.id,
+            userId: req.user.id,
+          },
+        });
+      }
+
       return newOrder;
     });
 

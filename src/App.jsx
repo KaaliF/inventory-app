@@ -6,6 +6,7 @@ import Dashboard from './pages/Dashboard';
 import Inventory from './pages/Inventory';
 import Sell from './pages/Sell';
 import Orders from './pages/Orders';
+import Roznamcha from './pages/Roznamcha';
 
 function ProtectedRoute({ children }) {
   const { user } = useApp();
@@ -28,6 +29,7 @@ function App() {
             <Route path="/inventory" element={<Inventory />} />
             <Route path="/sell" element={<Sell />} />
             <Route path="/orders" element={<Orders />} />
+            <Route path="/roznamcha" element={<Roznamcha />} />
           </Route>
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
