@@ -51,7 +51,7 @@ const paymentModeBadge = (mode, t) => {
 
 export default function Ledger() {
   const { t } = useLanguage();
-  const { labor, banks } = useApp();
+  const { labor, banks, vendors, customers, inventory, fetchInventory } = useApp();
   const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
   const [data, setData] = useState(null);
   const [showForm, setShowForm] = useState(false);
@@ -64,7 +64,11 @@ export default function Ledger() {
     partyName: '',
     amount: '',
     laborId: '',
+    vendorId: '',
+    customerId: '',
     bankId: '',
+    itemId: '',
+    itemQty: '1',
     paymentMode: 'cash',
   });
   const [attachFile, setAttachFile] = useState(null);
@@ -85,7 +89,7 @@ export default function Ledger() {
   }, [fetchData]);
 
   const resetForm = () => {
-    setForm({ type: 'jama', category: 'sale', description: '', partyName: '', amount: '', laborId: '', bankId: '', paymentMode: 'cash' });
+    setForm({ type: 'jama', category: 'sale', description: '', partyName: '', amount: '', laborId: '', vendorId: '', customerId: '', bankId: '', itemId: '', itemQty: '1', paymentMode: 'cash' });
     setAttachFile(null);
     setShowForm(false);
   };
@@ -97,6 +101,9 @@ export default function Ledger() {
       category,
       type: mappedType !== null ? mappedType : form.type,
       laborId: category === 'labor_payment' ? form.laborId : '',
+      vendorId: category === 'purchase' ? form.vendorId : '',
+      customerId: category === 'sale' ? form.customerId : '',
+      itemId: (category === 'sale' || category === 'purchase') ? form.itemId : '',
       bankId: '',
       paymentMode: 'cash',
     });
@@ -113,6 +120,48 @@ export default function Ledger() {
     });
   };
 
+  const handleVendorSelect = (vendorId) => {
+    const selectedVendor = vendors.find((v) => v.id === vendorId);
+    setForm({
+      ...form,
+      vendorId,
+      partyName: selectedVendor ? selectedVendor.name : form.partyName,
+    });
+  };
+
+  const handleCustomerSelect = (customerId) => {
+    const selectedCustomer = customers.find((c) => c.id === customerId);
+    setForm({
+      ...form,
+      customerId,
+      partyName: selectedCustomer ? selectedCustomer.name : form.partyName,
+    });
+  };
+
+  const handleItemSelect = (itemId) => {
+    const selectedItem = inventory.find((item) => item.id === itemId);
+    const qty = 1;
+    setForm({
+      ...form,
+      itemId,
+      itemQty: String(qty),
+      description: selectedItem
+        ? `${form.category === 'sale' ? 'Sale' : 'Purchase'} - ${selectedItem.name}`
+        : form.description,
+      amount: selectedItem?.price ? String(selectedItem.price * qty) : form.amount,
+    });
+  };
+
+  const handleItemQtyChange = (newQty) => {
+    const selectedItem = inventory.find((item) => item.id === form.itemId);
+    const qty = Number(newQty) || 0;
+    setForm({
+      ...form,
+      itemQty: newQty,
+      amount: selectedItem?.price ? String(selectedItem.price * qty) : form.amount,
+    });
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setSubmitting(true);
@@ -125,6 +174,12 @@ export default function Ledger() {
       fd.append('amount', form.amount);
       fd.append('paymentMode', form.paymentMode);
       if (form.laborId) fd.append('laborId', form.laborId);
+      if (form.vendorId) fd.append('vendorId', form.vendorId);
+      if (form.customerId) fd.append('customerId', form.customerId);
+      if (form.itemId) {
+        fd.append('itemId', form.itemId);
+        fd.append('itemQty', form.itemQty);
+      }
       if (form.paymentMode === 'bank' && form.bankId) fd.append('bankId', form.bankId);
       if (attachFile) fd.append('attachment', attachFile);
 
@@ -133,6 +188,7 @@ export default function Ledger() {
       });
       resetForm();
       fetchData();
+      if (form.itemId) fetchInventory();
     } catch (err) {
       alert(err.response?.data?.error || 'Error saving entry');
     } finally {
@@ -154,6 +210,18 @@ export default function Ledger() {
   const getLaborName = (laborId) => {
     const l = labor.find((lb) => lb.id === laborId);
     return l ? l.name : laborId;
+  };
+  const getVendorName = (vendorId) => {
+    const v = vendors.find((vn) => vn.id === vendorId);
+    return v ? v.name : vendorId;
+  };
+  const getCustomerName = (customerId) => {
+    const c = customers.find((cu) => cu.id === customerId);
+    return c ? c.name : customerId;
+  };
+  const getItemName = (itemId) => {
+    const item = inventory.find((i) => i.id === itemId);
+    return item ? `${item.name} (${item.itemCode})` : itemId;
   };
 
   return (
@@ -280,6 +348,75 @@ export default function Ledger() {
                     </option>
                   ))}
                 </select>
+              </div>
+            )}
+
+            {/* Vendor dropdown when purchase selected */}
+            {form.category === 'purchase' && (
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">{t('roznamcha.selectVendor')}</label>
+                <select
+                  value={form.vendorId}
+                  onChange={(e) => handleVendorSelect(e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 outline-none"
+                >
+                  <option value="">{t('roznamcha.selectVendor')}</option>
+                  {vendors.map((v) => (
+                    <option key={v.id} value={v.id}>
+                      {v.name} {v.phone ? `— ${v.phone}` : ''}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            )}
+
+            {/* Customer dropdown when sale selected */}
+            {form.category === 'sale' && (
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">{t('roznamcha.selectCustomer')}</label>
+                <select
+                  value={form.customerId}
+                  onChange={(e) => handleCustomerSelect(e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 outline-none"
+                >
+                  <option value="">{t('roznamcha.selectCustomer')}</option>
+                  {customers.map((c) => (
+                    <option key={c.id} value={c.id}>
+                      {c.name} {c.phone ? `— ${c.phone}` : ''}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            )}
+
+            {/* Item dropdown + quantity when sale or purchase selected */}
+            {(form.category === 'sale' || form.category === 'purchase') && (
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div className="sm:col-span-2">
+                  <label className="block text-sm font-medium text-gray-700 mb-1">{t('roznamcha.selectItem')}</label>
+                  <select
+                    value={form.itemId}
+                    onChange={(e) => handleItemSelect(e.target.value)}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 outline-none"
+                  >
+                    <option value="">{t('roznamcha.selectItem')}</option>
+                    {inventory.map((item) => (
+                      <option key={item.id} value={item.id}>
+                        {item.name} — Rs {item.price.toLocaleString()} ({item.quantity} {item.unit === 'kg' ? 'KG' : 'QTY'})
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">{t('roznamcha.itemQty')}</label>
+                  <input
+                    type="number"
+                    min="1"
+                    value={form.itemQty}
+                    onChange={(e) => handleItemQtyChange(e.target.value)}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 outline-none"
+                  />
+                </div>
               </div>
             )}
 
@@ -592,6 +729,27 @@ export default function Ledger() {
                 <div>
                   <p className="text-xs text-gray-500">{t('roznamcha.laborName')}</p>
                   <p className="text-sm font-medium text-gray-900">{getLaborName(detailTx.laborId)}</p>
+                </div>
+              )}
+
+              {detailTx.vendorId && (
+                <div>
+                  <p className="text-xs text-gray-500">{t('roznamcha.vendorName')}</p>
+                  <p className="text-sm font-medium text-gray-900">{getVendorName(detailTx.vendorId)}</p>
+                </div>
+              )}
+
+              {detailTx.customerId && (
+                <div>
+                  <p className="text-xs text-gray-500">{t('roznamcha.customerName')}</p>
+                  <p className="text-sm font-medium text-gray-900">{getCustomerName(detailTx.customerId)}</p>
+                </div>
+              )}
+
+              {detailTx.itemId && (
+                <div>
+                  <p className="text-xs text-gray-500">{t('roznamcha.selectItem')}</p>
+                  <p className="text-sm font-medium text-indigo-700">{getItemName(detailTx.itemId)}</p>
                 </div>
               )}
 

@@ -26,6 +26,8 @@ export function AppProvider({ children }) {
   const [orders, setOrders] = useState([]);
   const [banks, setBanks] = useState([]);
   const [labor, setLabor] = useState([]);
+  const [vendors, setVendors] = useState([]);
+  const [customers, setCustomers] = useState([]);
   const [loading, setLoading] = useState(false);
 
   const login = async (username, password) => {
@@ -52,6 +54,8 @@ export function AppProvider({ children }) {
     setOrders([]);
     setBanks([]);
     setLabor([]);
+    setVendors([]);
+    setCustomers([]);
   };
 
   const fetchInventory = useCallback(async () => {
@@ -149,6 +153,56 @@ export function AppProvider({ children }) {
     await fetchLabor();
   };
 
+  // Vendors
+  const fetchVendors = useCallback(async () => {
+    try {
+      const { data } = await API.get('/vendors');
+      setVendors(data);
+    } catch (err) {
+      if (err.response?.status === 401) logout();
+    }
+  }, []);
+
+  const addVendor = async (vendor) => {
+    await API.post('/vendors', vendor);
+    await fetchVendors();
+  };
+
+  const updateVendor = async (id, updates) => {
+    await API.put(`/vendors/${id}`, updates);
+    await fetchVendors();
+  };
+
+  const deleteVendor = async (id) => {
+    await API.delete(`/vendors/${id}`);
+    await fetchVendors();
+  };
+
+  // Customers
+  const fetchCustomers = useCallback(async () => {
+    try {
+      const { data } = await API.get('/customers');
+      setCustomers(data);
+    } catch (err) {
+      if (err.response?.status === 401) logout();
+    }
+  }, []);
+
+  const addCustomer = async (customer) => {
+    await API.post('/customers', customer);
+    await fetchCustomers();
+  };
+
+  const updateCustomer = async (id, updates) => {
+    await API.put(`/customers/${id}`, updates);
+    await fetchCustomers();
+  };
+
+  const deleteCustomer = async (id) => {
+    await API.delete(`/customers/${id}`);
+    await fetchCustomers();
+  };
+
   // Load data when user logs in
   useEffect(() => {
     if (user) {
@@ -156,8 +210,10 @@ export function AppProvider({ children }) {
       fetchOrders();
       fetchBanks();
       fetchLabor();
+      fetchVendors();
+      fetchCustomers();
     }
-  }, [user, fetchInventory, fetchOrders, fetchBanks, fetchLabor]);
+  }, [user, fetchInventory, fetchOrders, fetchBanks, fetchLabor, fetchVendors, fetchCustomers]);
 
   return (
     <AppContext.Provider
@@ -167,6 +223,8 @@ export function AppProvider({ children }) {
         orders, createOrder, fetchOrders,
         banks, addBank, updateBank, deleteBank, fetchBanks,
         labor, addLabor, updateLabor, deleteLabor, fetchLabor,
+        vendors, addVendor, updateVendor, deleteVendor, fetchVendors,
+        customers, addCustomer, updateCustomer, deleteCustomer, fetchCustomers,
       }}
     >
       {children}

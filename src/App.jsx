@@ -4,11 +4,13 @@ import Layout from './components/Layout';
 import Login from './pages/Login';
 import Dashboard from './pages/Dashboard';
 import Inventory from './pages/Inventory';
-import Sell from './pages/Sell';
 import Orders from './pages/Orders';
 import Ledger from './pages/Ledger';
 import Banks from './pages/Banks';
 import Labor from './pages/Labor';
+import Vendors from './pages/Vendors';
+import Customers from './pages/Customers';
+import Profit from './pages/Profit';
 
 function ProtectedRoute({ children }) {
   const { user } = useApp();
@@ -29,11 +31,13 @@ function App() {
           <Route element={<ProtectedRoute><Layout /></ProtectedRoute>}>
             <Route path="/" element={<Dashboard />} />
             <Route path="/inventory" element={<Inventory />} />
-            <Route path="/sell" element={<Sell />} />
             <Route path="/orders" element={<Orders />} />
             <Route path="/ledger" element={<Ledger />} />
             <Route path="/banks" element={<Banks />} />
             <Route path="/labor" element={<Labor />} />
+            <Route path="/vendors" element={<Vendors />} />
+            <Route path="/customers" element={<Customers />} />
+            <Route path="/profit" element={<Profit />} />
           </Route>
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>

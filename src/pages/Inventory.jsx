@@ -169,6 +169,7 @@ export default function Inventory() {
               <th className="text-left px-6 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">{t('inventory.quantity')}</th>
               <th className="text-left px-6 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">{t('inventory.unit')}</th>
               <th className="text-left px-6 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">{t('inventory.price')}</th>
+              <th className="text-left px-6 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">{t('inventory.totalValue')}</th>
               <th className="text-right px-6 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">{t('inventory.actions')}</th>
             </tr>
           </thead>
@@ -196,6 +197,7 @@ export default function Inventory() {
                   </span>
                 </td>
                 <td className="px-6 py-4 text-sm text-gray-700">Rs {item.price.toLocaleString()}</td>
+                <td className="px-6 py-4 text-sm font-semibold text-gray-900">Rs {(item.price * item.quantity).toLocaleString()}</td>
                 <td className="px-6 py-4 text-right space-x-2">
                   <button
                     onClick={() => startEdit(item)}
@@ -214,7 +216,7 @@ export default function Inventory() {
             ))}
             {filtered.length === 0 && (
               <tr>
-                <td colSpan={6} className="px-6 py-12 text-center text-gray-400">
+                <td colSpan={7} className="px-6 py-12 text-center text-gray-400">
                   {t('inventory.noItems')}
                 </td>
               </tr>

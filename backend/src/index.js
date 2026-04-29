@@ -9,6 +9,9 @@ import orderRoutes from './routes/orders.js';
 import ledgerRoutes from './routes/ledger.js';
 import bankRoutes from './routes/banks.js';
 import laborRoutes from './routes/labor.js';
+import vendorRoutes from './routes/vendors.js';
+import customerRoutes from './routes/customers.js';
+import profitRoutes from './routes/profit.js';
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -30,6 +33,9 @@ app.use('/api/orders', orderRoutes);
 app.use('/api/ledger', ledgerRoutes);
 app.use('/api/banks', bankRoutes);
 app.use('/api/labor', laborRoutes);
+app.use('/api/vendors', vendorRoutes);
+app.use('/api/customers', customerRoutes);
+app.use('/api/profit', profitRoutes);
 
 // Health check
 app.get('/api/health', (req, res) => {

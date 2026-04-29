@@ -5,11 +5,13 @@ import { useLanguage } from '../context/LanguageContext';
 const navKeys = [
   { to: '/', key: 'nav.dashboard' },
   { to: '/inventory', key: 'nav.inventory' },
-  { to: '/sell', key: 'nav.newSale' },
   { to: '/orders', key: 'nav.orders' },
   { to: '/ledger', key: 'nav.ledger' },
   { to: '/banks', key: 'nav.banks' },
   { to: '/labor', key: 'nav.labor' },
+  { to: '/vendors', key: 'nav.vendors' },
+  { to: '/customers', key: 'nav.customers' },
+  { to: '/profit', key: 'nav.profit' },
 ];
 
 export default function Layout() {

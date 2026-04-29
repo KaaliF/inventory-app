@@ -17,6 +17,8 @@ model User {
   transactions Transaction[]
   banks        Bank[]
   labors       Labor[]
+  vendors      Vendor[]
+  customers    Customer[]
 }
 
 model Bank {
@@ -40,6 +42,28 @@ model Labor {
   updatedAt DateTime @updatedAt
 }
 
+model Vendor {
+  id        String   @id @default(cuid())
+  name      String
+  phone     String?
+  address   String?
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Customer {
+  id        String   @id @default(cuid())
+  name      String
+  phone     String?
+  address   String?
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
 model Transaction {
   id          String   @id @default(cuid())
   type        String   // "jama" (in) or "naam" (out)
@@ -51,6 +75,11 @@ model Transaction {
   orderId     String?
   bankId      String?
   laborId     String?
+  vendorId    String?
+  customerId  String?
+  itemId      String?
+  item        Item?    @relation(fields: [itemId], references: [id])
+  itemQty     Int?
   paymentMode String?  // "cash", "credit", "bank"
   attachment  String?  // file path for uploaded image
   createdAt   DateTime @default(now())
@@ -67,7 +96,8 @@ model Item {
   unit      String      @default("qty")
   createdAt DateTime    @default(now())
   updatedAt DateTime    @updatedAt
-  orderItems OrderItem[]
+  orderItems   OrderItem[]
+  transactions Transaction[]
 }
 
 model Order {

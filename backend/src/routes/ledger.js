@@ -87,7 +87,7 @@ router.get('/', async (req, res) => {
 // POST /api/ledger — manual entry with optional attachment
 router.post('/', upload.single('attachment'), async (req, res) => {
   try {
-    const { type, category, description, partyName, amount, laborId, bankId, paymentMode } = req.body;
+    const { type, category, description, partyName, amount, laborId, bankId, vendorId, customerId, paymentMode, itemId, itemQty } = req.body;
 
     console.log('Ledger POST body:', req.body, 'file:', req.file?.filename);
 
@@ -115,11 +115,30 @@ router.post('/', upload.single('attachment'), async (req, res) => {
         balance: newBalance,
         laborId: laborId || null,
         bankId: bankId || null,
+        vendorId: vendorId || null,
+        customerId: customerId || null,
+        itemId: itemId || null,
+        itemQty: itemQty ? Number(itemQty) : null,
         paymentMode: paymentMode || 'cash',
         attachment,
         userId: req.user.id,
       },
     });
+
+    // Update inventory quantity when item is selected
+    if (itemId && (category === 'sale' || category === 'purchase')) {
+      const qty = Number(itemQty) || 1;
+      const item = await prisma.item.findUnique({ where: { id: itemId } });
+      if (item) {
+        const newQuantity = category === 'sale'
+          ? Math.max(0, item.quantity - qty)
+          : item.quantity + qty;
+        await prisma.item.update({
+          where: { id: itemId },
+          data: { quantity: newQuantity },
+        });
+      }
+    }
 
     res.status(201).json(transaction);
   } catch (err) {
