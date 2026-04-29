@@ -58,6 +58,19 @@ router.put('/:id', async (req, res) => {
   }
 });
 
+// GET /api/labor/:id/transactions
+router.get('/:id/transactions', async (req, res) => {
+  try {
+    const transactions = await prisma.transaction.findMany({
+      where: { laborId: req.params.id },
+      orderBy: { createdAt: 'desc' },
+    });
+    res.json(transactions);
+  } catch (err) {
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
 // DELETE /api/labor/:id
 router.delete('/:id', async (req, res) => {
   try {

@@ -1,6 +1,15 @@
 import { useState } from 'react';
+import axios from 'axios';
 import { useApp } from '../context/AppContext';
 import { useLanguage } from '../context/LanguageContext';
+
+const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+const API = axios.create({ baseURL: API_BASE });
+API.interceptors.request.use((config) => {
+  const token = localStorage.getItem('token');
+  if (token) config.headers.Authorization = `Bearer ${token}`;
+  return config;
+});
 
 export default function Labor() {
   const { labor, addLabor, updateLabor, deleteLabor } = useApp();
@@ -9,6 +18,11 @@ export default function Labor() {
   const [editingId, setEditingId] = useState(null);
   const [form, setForm] = useState({ name: '', phone: '', dailyRate: '' });
   const [saving, setSaving] = useState(false);
+
+  // Ledger modal state
+  const [ledgerLabor, setLedgerLabor] = useState(null);
+  const [ledgerTxns, setLedgerTxns] = useState([]);
+  const [ledgerLoading, setLedgerLoading] = useState(false);
 
   const resetForm = () => {
     setForm({ name: '', phone: '', dailyRate: '' });
@@ -56,6 +70,26 @@ export default function Labor() {
       alert(err.response?.data?.error || 'Error deleting labor');
     }
   };
+
+  const openLedger = async (item) => {
+    setLedgerLabor(item);
+    setLedgerLoading(true);
+    try {
+      const { data } = await API.get(`/labor/${item.id}/transactions`);
+      setLedgerTxns(data);
+    } catch (err) {
+      setLedgerTxns([]);
+    } finally {
+      setLedgerLoading(false);
+    }
+  };
+
+  const closeLedger = () => {
+    setLedgerLabor(null);
+    setLedgerTxns([]);
+  };
+
+  const totalPaid = ledgerTxns.reduce((sum, tx) => sum + tx.amount, 0);
 
   return (
     <div className="space-y-6">
@@ -149,6 +183,12 @@ export default function Labor() {
                 </td>
                 <td className="px-6 py-4 text-right space-x-2">
                   <button
+                    onClick={() => openLedger(item)}
+                    className="text-emerald-600 hover:text-emerald-800 text-sm font-medium cursor-pointer"
+                  >
+                    {t('labor.ledger')}
+                  </button>
+                  <button
                     onClick={() => startEdit(item)}
                     className="text-indigo-600 hover:text-indigo-800 text-sm font-medium cursor-pointer"
                   >
@@ -173,6 +213,84 @@ export default function Labor() {
           </tbody>
         </table>
       </div>
+
+      {/* Ledger Modal */}
+      {ledgerLabor && (
+        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4" onClick={closeLedger}>
+          <div className="bg-white rounded-2xl shadow-xl max-w-3xl w-full max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
+            <div className="p-6 space-y-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h3 className="text-lg font-bold text-gray-900">
+                    {t('labor.ledgerFor')} {ledgerLabor.name}
+                  </h3>
+                  {ledgerLabor.phone && (
+                    <p className="text-sm text-gray-500">{ledgerLabor.phone}</p>
+                  )}
+                  {ledgerLabor.dailyRate && (
+                    <p className="text-sm text-gray-500">{t('labor.dailyRate')}: Rs {ledgerLabor.dailyRate.toLocaleString()}</p>
+                  )}
+                </div>
+                <button
+                  onClick={closeLedger}
+                  className="text-gray-400 hover:text-gray-600 text-2xl leading-none cursor-pointer"
+                >
+                  &times;
+                </button>
+              </div>
+
+              {!ledgerLoading && ledgerTxns.length > 0 && (
+                <div className="bg-blue-50 rounded-xl border border-blue-200 p-3 inline-block">
+                  <p className="text-xs text-blue-600">{t('labor.totalPayments')}</p>
+                  <p className="text-lg font-bold text-blue-700">Rs {totalPaid.toLocaleString()}</p>
+                </div>
+              )}
+
+              {ledgerLoading ? (
+                <div className="py-12 text-center text-gray-400">{t('labor.loading')}</div>
+              ) : ledgerTxns.length === 0 ? (
+                <div className="py-12 text-center text-gray-400">{t('labor.noTransactions')}</div>
+              ) : (
+                <div className="overflow-x-auto">
+                  <table className="w-full">
+                    <thead>
+                      <tr className="bg-gray-50 border-b border-gray-200">
+                        <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase">#</th>
+                        <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase">{t('ledgerModal.date')}</th>
+                        <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase">{t('ledgerModal.description')}</th>
+                        <th className="text-right px-4 py-3 text-xs font-semibold text-gray-500 uppercase">{t('ledgerModal.amount')}</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-gray-100">
+                      {ledgerTxns.slice().sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt)).map((tx, i) => (
+                        <tr key={tx.id} className="hover:bg-gray-50">
+                          <td className="px-4 py-3 text-sm text-gray-400">{i + 1}</td>
+                          <td className="px-4 py-3 text-sm text-gray-600">
+                            {new Date(tx.createdAt).toLocaleDateString('en-PK')}
+                          </td>
+                          <td className="px-4 py-3 text-sm text-gray-900">{tx.description}</td>
+                          <td className="px-4 py-3 text-sm text-right font-medium text-blue-700">
+                            Rs {tx.amount.toLocaleString()}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+
+              <div className="pt-2">
+                <button
+                  onClick={closeLedger}
+                  className="w-full py-2 bg-gray-100 text-gray-700 rounded-lg text-sm font-medium hover:bg-gray-200 cursor-pointer"
+                >
+                  {t('ledgerModal.close')}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

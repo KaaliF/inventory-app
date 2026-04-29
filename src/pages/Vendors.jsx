@@ -80,7 +80,9 @@ export default function Vendors() {
     setLedgerTxns([]);
   };
 
-  const totalAmount = ledgerTxns.reduce((sum, tx) => sum + tx.amount, 0);
+  const totalDebit = ledgerTxns.filter(tx => tx.category === 'purchase').reduce((sum, tx) => sum + tx.amount, 0);
+  const totalCredit = ledgerTxns.filter(tx => tx.category === 'payment_sent').reduce((sum, tx) => sum + tx.amount, 0);
+  const netBalance = totalDebit - totalCredit;
 
   return (
     <div className="space-y-6">
@@ -225,10 +227,19 @@ export default function Vendors() {
               </div>
 
               {!ledgerLoading && ledgerTxns.length > 0 && (
-                <div className="bg-red-50 rounded-xl border border-red-200 p-4">
-                  <p className="text-xs text-red-600">{t('vendors.totalPurchases')}</p>
-                  <p className="text-xl font-bold text-red-700">Rs {totalAmount.toLocaleString()}</p>
-                  <p className="text-xs text-gray-500 mt-1">{ledgerTxns.length} {t('vendors.transactions')}</p>
+                <div className="grid grid-cols-3 gap-3">
+                  <div className="bg-red-50 rounded-xl border border-red-200 p-3">
+                    <p className="text-xs text-red-600">{t('vendors.totalPurchases')}</p>
+                    <p className="text-lg font-bold text-red-700">Rs {totalDebit.toLocaleString()}</p>
+                  </div>
+                  <div className="bg-green-50 rounded-xl border border-green-200 p-3">
+                    <p className="text-xs text-green-600">{t('vendors.totalPaid')}</p>
+                    <p className="text-lg font-bold text-green-700">Rs {totalCredit.toLocaleString()}</p>
+                  </div>
+                  <div className={`rounded-xl border p-3 ${netBalance > 0 ? 'bg-orange-50 border-orange-200' : 'bg-emerald-50 border-emerald-200'}`}>
+                    <p className={`text-xs ${netBalance > 0 ? 'text-orange-600' : 'text-emerald-600'}`}>{t('vendors.balance')}</p>
+                    <p className={`text-lg font-bold ${netBalance > 0 ? 'text-orange-700' : 'text-emerald-700'}`}>Rs {netBalance.toLocaleString()}</p>
+                  </div>
                 </div>
               )}
 
@@ -245,39 +256,40 @@ export default function Vendors() {
                         <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase">{t('ledgerModal.date')}</th>
                         <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase">{t('ledgerModal.description')}</th>
                         <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase">{t('ledgerModal.item')}</th>
-                        <th className="text-right px-4 py-3 text-xs font-semibold text-gray-500 uppercase">{t('ledgerModal.qty')}</th>
-                        <th className="text-right px-4 py-3 text-xs font-semibold text-gray-500 uppercase">{t('ledgerModal.amount')}</th>
-                        <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase">{t('ledgerModal.paymentMode')}</th>
+                        <th className="text-right px-4 py-3 text-xs font-semibold text-red-600 uppercase">{t('ledgerModal.debit')}</th>
+                        <th className="text-right px-4 py-3 text-xs font-semibold text-green-600 uppercase">{t('ledgerModal.credit')}</th>
+                        <th className="text-right px-4 py-3 text-xs font-semibold text-gray-500 uppercase">{t('ledgerModal.balance')}</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-gray-100">
-                      {ledgerTxns.map((tx, i) => (
-                        <tr key={tx.id} className="hover:bg-gray-50">
-                          <td className="px-4 py-3 text-sm text-gray-400">{i + 1}</td>
-                          <td className="px-4 py-3 text-sm text-gray-600">
-                            {new Date(tx.createdAt).toLocaleDateString('en-PK')}
-                          </td>
-                          <td className="px-4 py-3 text-sm text-gray-900">{tx.description}</td>
-                          <td className="px-4 py-3 text-sm text-gray-600">
-                            {tx.item ? `${tx.item.name} (${tx.item.itemCode})` : '—'}
-                          </td>
-                          <td className="px-4 py-3 text-sm text-right text-gray-600">{tx.itemQty || '—'}</td>
-                          <td className="px-4 py-3 text-sm text-right font-medium text-red-600">
-                            Rs {tx.amount.toLocaleString()}
-                          </td>
-                          <td className="px-4 py-3 text-sm">
-                            <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${
-                              tx.paymentMode === 'bank' ? 'bg-blue-100 text-blue-700' :
-                              tx.paymentMode === 'credit' ? 'bg-red-100 text-red-700' :
-                              'bg-green-100 text-green-700'
-                            }`}>
-                              {tx.paymentMode === 'bank' ? t('roznamcha.modeBank') :
-                               tx.paymentMode === 'credit' ? t('roznamcha.modeCredit') :
-                               t('roznamcha.modeCash')}
-                            </span>
-                          </td>
-                        </tr>
-                      ))}
+                      {(() => {
+                        let runBal = 0;
+                        return ledgerTxns.slice().sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt)).map((tx, i) => {
+                          const isDebit = tx.category === 'purchase';
+                          if (isDebit) runBal += tx.amount; else runBal -= tx.amount;
+                          return (
+                            <tr key={tx.id} className="hover:bg-gray-50">
+                              <td className="px-4 py-3 text-sm text-gray-400">{i + 1}</td>
+                              <td className="px-4 py-3 text-sm text-gray-600">
+                                {new Date(tx.createdAt).toLocaleDateString('en-PK')}
+                              </td>
+                              <td className="px-4 py-3 text-sm text-gray-900">{tx.description}</td>
+                              <td className="px-4 py-3 text-sm text-gray-600">
+                                {tx.item ? `${tx.item.name}` : '—'}
+                              </td>
+                              <td className="px-4 py-3 text-sm text-right font-medium text-red-600">
+                                {isDebit ? `Rs ${tx.amount.toLocaleString()}` : ''}
+                              </td>
+                              <td className="px-4 py-3 text-sm text-right font-medium text-green-600">
+                                {!isDebit ? `Rs ${tx.amount.toLocaleString()}` : ''}
+                              </td>
+                              <td className={`px-4 py-3 text-sm text-right font-bold ${runBal > 0 ? 'text-orange-600' : 'text-emerald-600'}`}>
+                                Rs {runBal.toLocaleString()}
+                              </td>
+                            </tr>
+                          );
+                        });
+                      })()}
                     </tbody>
                   </table>
                 </div>

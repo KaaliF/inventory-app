@@ -81,6 +81,8 @@ const translations = {
     'roznamcha.category': 'Category',
     'roznamcha.catSale': 'Sale',
     'roznamcha.catPurchase': 'Purchase',
+    'roznamcha.catPaymentReceived': 'Payment Received',
+    'roznamcha.catPaymentSent': 'Payment Sent',
     'roznamcha.catExpense': 'Expense',
     'roznamcha.catUdharWapsi': 'Debt Recovery',
     'roznamcha.catUdharDiya': 'Debt Given',
@@ -229,6 +231,11 @@ const translations = {
     'labor.noLabor': 'No labor added yet',
     'labor.confirmDelete': 'Are you sure?',
     'labor.actions': 'Actions',
+    'labor.ledger': 'Ledger',
+    'labor.ledgerFor': 'Ledger for',
+    'labor.totalPayments': 'Total Payments',
+    'labor.noTransactions': 'No payments found for this labor',
+    'labor.loading': 'Loading...',
 
     // Vendors
     'vendors.title': 'Vendors',
@@ -255,6 +262,8 @@ const translations = {
     'vendors.totalPurchases': 'Total Purchases',
     'vendors.transactions': 'transactions',
     'vendors.noTransactions': 'No transactions found for this vendor',
+    'vendors.totalPaid': 'Total Paid',
+    'vendors.balance': 'Balance',
     'vendors.loading': 'Loading...',
 
     // Customers
@@ -282,6 +291,8 @@ const translations = {
     'customers.totalSales': 'Total Sales',
     'customers.transactions': 'transactions',
     'customers.noTransactions': 'No transactions found for this customer',
+    'customers.totalReceived': 'Total Received',
+    'customers.balance': 'Balance',
     'customers.loading': 'Loading...',
 
     // Ledger Modal (shared)
@@ -290,6 +301,9 @@ const translations = {
     'ledgerModal.item': 'Item',
     'ledgerModal.qty': 'Qty',
     'ledgerModal.amount': 'Amount',
+    'ledgerModal.debit': 'Debit (Dr)',
+    'ledgerModal.credit': 'Credit (Cr)',
+    'ledgerModal.balance': 'Balance',
     'ledgerModal.paymentMode': 'Payment',
     'ledgerModal.close': 'Close',
   },
@@ -374,6 +388,8 @@ const translations = {
     'roznamcha.category': '\u0632\u0645\u0631\u06C1',
     'roznamcha.catSale': '\u0641\u0631\u0648\u062E\u062A',
     'roznamcha.catPurchase': '\u062E\u0631\u06CC\u062F\u0627\u0631\u06CC',
+    'roznamcha.catPaymentReceived': '\u0631\u0642\u0645 \u0648\u0635\u0648\u0644',
+    'roznamcha.catPaymentSent': '\u0631\u0642\u0645 \u0627\u062F\u0627',
     'roznamcha.catExpense': '\u062E\u0631\u0686\u06C1',
     'roznamcha.catUdharWapsi': '\u0627\u062F\u06BE\u0627\u0631 \u0648\u0627\u067E\u0633\u06CC',
     'roznamcha.catUdharDiya': '\u0627\u062F\u06BE\u0627\u0631 \u062F\u06CC\u0627',
@@ -522,6 +538,11 @@ const translations = {
     'labor.noLabor': '\u0627\u0628\u06BE\u06CC \u062A\u06A9 \u06A9\u0648\u0626\u06CC \u0644\u06CC\u0628\u0631 \u0634\u0627\u0645\u0644 \u0646\u06C1\u06CC\u06BA',
     'labor.confirmDelete': '\u06A9\u06CC\u0627 \u0622\u067E \u0648\u0627\u0642\u0639\u06CC \u062D\u0630\u0641 \u06A9\u0631\u0646\u0627 \u0686\u0627\u06C1\u062A\u06D2 \u06C1\u06CC\u06BA\u061F',
     'labor.actions': '\u0639\u0645\u0644',
+    'labor.ledger': '\u0644\u06CC\u062C\u0631',
+    'labor.ledgerFor': '\u0644\u06CC\u062C\u0631 \u0628\u0631\u0627\u0626\u06D2',
+    'labor.totalPayments': '\u06A9\u0644 \u0627\u062F\u0627\u0626\u06CC\u06AF\u06CC\u0627\u06BA',
+    'labor.noTransactions': '\u0627\u0633 \u0644\u06CC\u0628\u0631 \u06A9\u06CC \u06A9\u0648\u0626\u06CC \u0627\u062F\u0627\u0626\u06CC\u06AF\u06CC \u0646\u06C1\u06CC\u06BA \u0645\u0644\u06CC',
+    'labor.loading': '...\u0644\u0648\u0688 \u06C1\u0648 \u0631\u06C1\u0627 \u06C1\u06D2',
 
     // Vendors
     'vendors.title': '\u0648\u06CC\u0646\u0688\u0631\u0632',
@@ -547,6 +568,8 @@ const translations = {
     'vendors.ledgerFor': '\u0644\u06CC\u062C\u0631 \u0628\u0631\u0627\u0626\u06D2',
     'vendors.totalPurchases': '\u06A9\u0644 \u062E\u0631\u06CC\u062F\u0627\u0631\u06CC',
     'vendors.transactions': '\u0644\u06CC\u0646 \u062F\u06CC\u0646',
+    'vendors.totalPaid': '\u06A9\u0644 \u0627\u062F\u0627\u0626\u06CC\u06AF\u06CC',
+    'vendors.balance': '\u0628\u0627\u0642\u06CC',
     'vendors.noTransactions': '\u0627\u0633 \u0648\u06CC\u0646\u0688\u0631 \u06A9\u06CC \u06A9\u0648\u0626\u06CC \u0644\u06CC\u0646 \u062F\u06CC\u0646 \u0646\u06C1\u06CC\u06BA \u0645\u0644\u06CC',
     'vendors.loading': '...\u0644\u0648\u0688 \u06C1\u0648 \u0631\u06C1\u0627 \u06C1\u06D2',
 
@@ -574,6 +597,8 @@ const translations = {
     'customers.ledgerFor': '\u0644\u06CC\u062C\u0631 \u0628\u0631\u0627\u0626\u06D2',
     'customers.totalSales': '\u06A9\u0644 \u0641\u0631\u0648\u062E\u062A',
     'customers.transactions': '\u0644\u06CC\u0646 \u062F\u06CC\u0646',
+    'customers.totalReceived': '\u06A9\u0644 \u0648\u0635\u0648\u0644\u06CC',
+    'customers.balance': '\u0628\u0627\u0642\u06CC',
     'customers.noTransactions': '\u0627\u0633 \u06A9\u0633\u0679\u0645\u0631 \u06A9\u06CC \u06A9\u0648\u0626\u06CC \u0644\u06CC\u0646 \u062F\u06CC\u0646 \u0646\u06C1\u06CC\u06BA \u0645\u0644\u06CC',
     'customers.loading': '...\u0644\u0648\u0688 \u06C1\u0648 \u0631\u06C1\u0627 \u06C1\u06D2',
 
@@ -583,6 +608,9 @@ const translations = {
     'ledgerModal.item': '\u0634\u06D2',
     'ledgerModal.qty': '\u0645\u0642\u062F\u0627\u0631',
     'ledgerModal.amount': '\u0631\u0642\u0645',
+    'ledgerModal.debit': '\u0646\u0627\u0645 (Dr)',
+    'ledgerModal.credit': '\u062C\u0645\u0639 (Cr)',
+    'ledgerModal.balance': '\u0628\u0627\u0642\u06CC',
     'ledgerModal.paymentMode': '\u0627\u062F\u0627\u0626\u06CC\u06AF\u06CC',
     'ledgerModal.close': '\u0628\u0646\u062F \u06A9\u0631\u06CC\u06BA',
   },

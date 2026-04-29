@@ -16,6 +16,8 @@ API.interceptors.request.use((config) => {
 const categoryTypeMap = {
   sale: 'jama',
   purchase: 'naam',
+  payment_received: 'jama',
+  payment_sent: 'naam',
   expense: 'naam',
   udhar_wapsi: 'jama',
   udhar_diya: 'naam',
@@ -26,6 +28,8 @@ const categoryTypeMap = {
 const categoryKeys = [
   { value: 'sale', key: 'roznamcha.catSale' },
   { value: 'purchase', key: 'roznamcha.catPurchase' },
+  { value: 'payment_received', key: 'roznamcha.catPaymentReceived' },
+  { value: 'payment_sent', key: 'roznamcha.catPaymentSent' },
   { value: 'expense', key: 'roznamcha.catExpense' },
   { value: 'udhar_wapsi', key: 'roznamcha.catUdharWapsi' },
   { value: 'udhar_diya', key: 'roznamcha.catUdharDiya' },
@@ -36,6 +40,8 @@ const categoryKeys = [
 const categoryLabelKeys = {
   sale: 'roznamcha.catSale',
   purchase: 'roznamcha.catPurchase',
+  payment_received: 'roznamcha.catPaymentReceived',
+  payment_sent: 'roznamcha.catPaymentSent',
   expense: 'roznamcha.catExpense',
   udhar_wapsi: 'roznamcha.catUdharWapsi',
   udhar_diya: 'roznamcha.catUdharDiya',
@@ -101,8 +107,8 @@ export default function Ledger() {
       category,
       type: mappedType !== null ? mappedType : form.type,
       laborId: category === 'labor_payment' ? form.laborId : '',
-      vendorId: category === 'purchase' ? form.vendorId : '',
-      customerId: category === 'sale' ? form.customerId : '',
+      vendorId: (category === 'purchase' || category === 'payment_sent') ? form.vendorId : '',
+      customerId: (category === 'sale' || category === 'payment_received') ? form.customerId : '',
       itemId: (category === 'sale' || category === 'purchase') ? form.itemId : '',
       bankId: '',
       paymentMode: 'cash',
@@ -126,6 +132,9 @@ export default function Ledger() {
       ...form,
       vendorId,
       partyName: selectedVendor ? selectedVendor.name : form.partyName,
+      description: form.category === 'payment_sent' && selectedVendor
+        ? `Payment sent - ${selectedVendor.name}`
+        : form.description,
     });
   };
 
@@ -135,6 +144,9 @@ export default function Ledger() {
       ...form,
       customerId,
       partyName: selectedCustomer ? selectedCustomer.name : form.partyName,
+      description: form.category === 'payment_received' && selectedCustomer
+        ? `Payment received - ${selectedCustomer.name}`
+        : form.description,
     });
   };
 
@@ -351,8 +363,8 @@ export default function Ledger() {
               </div>
             )}
 
-            {/* Vendor dropdown when purchase selected */}
-            {form.category === 'purchase' && (
+            {/* Vendor dropdown when purchase or payment_sent selected */}
+            {(form.category === 'purchase' || form.category === 'payment_sent') && (
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">{t('roznamcha.selectVendor')}</label>
                 <select
@@ -370,8 +382,8 @@ export default function Ledger() {
               </div>
             )}
 
-            {/* Customer dropdown when sale selected */}
-            {form.category === 'sale' && (
+            {/* Customer dropdown when sale or payment_received selected */}
+            {(form.category === 'sale' || form.category === 'payment_received') && (
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">{t('roznamcha.selectCustomer')}</label>
                 <select
